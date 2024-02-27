@@ -1,8 +1,10 @@
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 const app = express()
 
 app.use(express.json())
+app.use(cors())
 
 morgan.token('body', req => {
     return JSON.stringify(req.body)
@@ -63,8 +65,9 @@ app.delete('/api/persons/:id', (req, resp) => {
     const id = Number(req.params.id)
     const found = persons.map(p => p.id).includes(id)
     if (found) {
+        const removedPerson = persons.find(p => p.id === id)
         persons = persons.filter(p => p.id !== id)
-        resp.status(204).end()
+        resp.status(200).json(removedPerson)
     } else resp.status(404).end()
 })
 
@@ -86,7 +89,7 @@ app.post('/api/persons', (req, resp) => {
     resp.json(newPerson)
 })
 
-const PORT = 8080
+const PORT = process.env.PORT || 8080
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
