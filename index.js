@@ -1,7 +1,11 @@
+require('dotenv').config()
+
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const app = express()
+const mongoose = require('mongoose')
+const Person = require('./models/phonedb')
 
 app.use(express.json())
 app.use(cors())
@@ -40,6 +44,7 @@ let persons = [
 const info = () => {
     return `
         <div>
+            <p>Wrong info:</p>
             <p>Phonebook has info for ${persons.length} people</p>
             <p>${new Date().toString()}</p>
         </div>
@@ -51,14 +56,19 @@ app.get('/info', (req, resp) => {
 })
 
 app.get('/api/persons', (req, resp) => {
-    resp.json(persons)
+    Person.find({}).then(people => {
+        resp.json(people)
+    })
+    //resp.json(persons)
 })
 
 app.get('/api/persons/:id', (req, resp) => {
-    const id = Number(req.params.id)
-    const person = persons.find(p => p.id === id)
-    if (person) resp.json(person)
-    else resp.status(404).end()
+    Person.findById(req.params.id).then(person => {
+        resp.json(person)
+    })
+    //const person = persons.find(p => p.id === id)
+    //if (person) resp.json(person)
+    //else resp.status(404).end()
 })
 
 app.delete('/api/persons/:id', (req, resp) => {
