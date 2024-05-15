@@ -39,20 +39,22 @@ let persons = [
         "name": "Mary Poppendieck",
         "number": "39-23-6423122"
     }
-  ]
+]
 
-const info = () => {
-    return `
+const info = (resp) => {
+    Person.find({}).then(people => {
+        const len = people.length
+        resp.send(`
         <div>
-            <p>Wrong info:</p>
-            <p>Phonebook has info for ${persons.length} people</p>
+            <p>Phonebook has info for ${len} people</p>
             <p>${new Date().toString()}</p>
         </div>
-    `
+    `)
+    })
 }
 
 app.get('/info', (req, resp) => {
-    resp.send(info())
+    info(resp)
 })
 
 app.get('/api/persons', (req, resp) => {
@@ -67,20 +69,16 @@ app.get('/api/persons/:id', (req, resp) => {
     })
 })
 
-app.delete('/api/persons/:id', (req, resp) => {
-    const id = Number(req.params.id)
-    const found = persons.map(p => p.id).includes(id)
-    if (found) {
-        const removedPerson = persons.find(p => p.id === id)
-        persons = persons.filter(p => p.id !== id)
-        resp.status(200).json(removedPerson)
-    } else resp.status(404).end()
+app.delete('/api/persons/:id', (req, resp, next) => {
+    Person.findByIdAndDelete(req.params.id).then(res => {
+        resp.status(204).end()
+    }).catch(err => next(err))
 })
 
 app.post('/api/persons', (req, resp) => {
     const body = req.body
-    if (!body.name) return resp.status(400).json({"error":"name missing"})
-    if (!body.number) return resp.status(400).json({"error":"number missing"})
+    if (!body.name) return resp.status(400).json({ "error": "name missing" })
+    if (!body.number) return resp.status(400).json({ "error": "number missing" })
     const person = new Person({
         "name": body.name,
         "number": body.number
@@ -89,6 +87,20 @@ app.post('/api/persons', (req, resp) => {
         resp.json(saved)
     })
 })
+
+const unknownEndpoint = (req, res) => {
+    res.status(418).end()
+}
+app.use(unknownEndpoint)
+
+const errorHandler = (error, req, res, next) => {
+    console.error(error.message)
+    if (error.name === 'CastError') {
+        return res.status(400).send({ error: 'malformatted id' })
+    }
+    next(error)
+}
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 8080
 app.listen(PORT, () => {
