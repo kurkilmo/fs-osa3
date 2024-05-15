@@ -63,10 +63,11 @@ app.get('/api/persons', (req, resp) => {
     })
 })
 
-app.get('/api/persons/:id', (req, resp) => {
+app.get('/api/persons/:id', (req, resp, next) => {
     Person.findById(req.params.id).then(person => {
-        resp.json(person)
-    })
+        if (person) resp.json(person)
+        else resp.status(404).end()
+    }).catch(err => next(err))
 })
 
 app.delete('/api/persons/:id', (req, resp, next) => {
@@ -88,6 +89,8 @@ app.post('/api/persons', (req, resp) => {
     })
 })
 
+
+// Middleware:
 const unknownEndpoint = (req, res) => {
     res.status(418).end()
 }
