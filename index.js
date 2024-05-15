@@ -89,6 +89,17 @@ app.post('/api/persons', (req, resp) => {
     })
 })
 
+app.put('/api/persons/:id', (req, resp, next) => {
+    const body = req.body
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+    Person.findByIdAndUpdate(req.params.id, person, {new:true}).then(updatedPerson => {
+        resp.json(updatedPerson)
+    }).catch(err => next(err))
+})
+
 
 // Middleware:
 const unknownEndpoint = (req, res) => {
