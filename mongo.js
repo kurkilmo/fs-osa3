@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-if (process.argv.length<3) {
+if (process.argv.length < 3) {
   console.log('give password as argument')
   process.exit(1)
 }
@@ -22,33 +22,33 @@ const personSchema = new mongoose.Schema({
 const Person = mongoose.model('Person', personSchema)
 
 if (process.argv.length < 5) {
-    console.log("phonebook:")
-    Person.find({}).then(res => {
-        res.forEach(p => {
-            console.log(`${p.name} ${p.number}`)
-        })
-        mongoose.connection.close()
+  console.log('phonebook:')
+  Person.find({}).then(res => {
+    res.forEach(p => {
+      console.log(`${p.name} ${p.number}`)
     })
-    return
+    mongoose.connection.close()
+  })
+  return
 }
 
 const name = process.argv[3]
 const number = process.argv[4]
 
 const person = new Person({
-    name: name,
-    number: number
+  name: name,
+  number: number
 })
 
-person.save().then(res => {
-    console.log(`added ${name} number ${number} to phonebook`)
-    mongoose.connection.close()
+person.save().then(ignored => {
+  console.log(`added ${name} number ${number} to phonebook`)
+  mongoose.connection.close()
 })
 /*
 const note = new Note({
   content: 'HTML is easy',
   important: true,
-}) 
+})
 
 
 note.save().then(result => {
